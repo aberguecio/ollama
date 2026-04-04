@@ -8,6 +8,7 @@ services:
       - ./models:/models
     environment:
       - OLLAMA_HOST=${OLLAMA_HOST:-0.0.0.0}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-20m}
       - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
       - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-4}
       - OLLAMA_MAX_QUEUE=${OLLAMA_MAX_QUEUE:-512}
