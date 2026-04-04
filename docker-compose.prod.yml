@@ -17,13 +17,14 @@ services:
       timeout: 15s
       retries: 5
       start_period: 60s
+    networks:
+      - proxy
     deploy:
       resources:
         limits:
           memory: ${MEMORY_LIMIT:-12G}
         reservations:
           memory: ${MEMORY_RESERVATION:-4G}
-    # Solo acceso interno - sin Traefik
 
   ollama-webui:
     image: ghcr.io/open-webui/open-webui:main
