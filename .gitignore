@@ -1,0 +1,36 @@
+# Variables de entorno
+.env
+
+# Logs
+*.log
+logs/
+
+# Modelos descargados
+models/
+*.gguf
+
+# Datos de Docker volumes
+data/
+
+# Backup files
+*.backup
+*.tar.gz
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Benchmarks y tests
+benchmark_*.txt
+test_output/
