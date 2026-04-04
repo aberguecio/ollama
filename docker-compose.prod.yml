@@ -1,0 +1,96 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-prod
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./models:/models
+    environment:
+      - OLLAMA_HOST=${OLLAMA_HOST:-0.0.0.0}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-4}
+      - OLLAMA_MAX_QUEUE=${OLLAMA_MAX_QUEUE:-512}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: ${MEMORY_LIMIT:-12G}
+        reservations:
+          memory: ${MEMORY_RESERVATION:-4G}
+    # Solo acceso interno - sin Traefik
+
+  ollama-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: ollama-webui-prod
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-your-secret-key-change-this}
+    volumes:
+      - ollama_webui_data:/app/backend/data
+    depends_on:
+      - ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ollama-ui.rule=Host(`ai.berguecio.cl`)"
+      - "traefik.http.routers.ollama-ui.entrypoints=websecure"
+      - "traefik.http.routers.ollama-ui.tls=true"
+      - "traefik.http.services.ollama-ui.loadbalancer.server.port=8080"
+      - "traefik.docker.network=proxy"
+      - "monitoring.url=https://ai.berguecio.cl/health"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-prod
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-your-super-secret-api-key}
+      - LITELLM_UI_PASSWORD=${LITELLM_UI_PASSWORD:-changeme123}
+      - DATABASE_URL=sqlite:///app/data/litellm.db
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+      - litellm_data:/app/data
+    depends_on:
+      - ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.litellm.rule=Host(`ai-api.berguecio.cl`)"
+      - "traefik.http.routers.litellm.entrypoints=websecure"
+      - "traefik.http.routers.litellm.tls=true"
+      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+      - "traefik.docker.network=proxy"
+      - "monitoring.url=https://ai-api.berguecio.cl/health"
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  ollama_data:
+    driver: local
+  ollama_webui_data:
+    driver: local
+  litellm_data:
+    driver: local

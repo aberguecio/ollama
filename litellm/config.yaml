@@ -1,0 +1,26 @@
+# LiteLLM configuración - Solo Ollama local
+litellm_settings:
+  # Logging
+  set_verbose: true
+  json_logs: true
+
+  # Rate limiting
+  rpm_limit: 1000
+  tpm_limit: 100000
+
+# Configuración general
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+  # UI de admin (opcional)
+  ui_username: admin
+  ui_password: os.environ/LITELLM_UI_PASSWORD
+
+# Solo Ollama - proxy dinámico para todos los modelos disponibles
+model_list:
+  - model_name: "*"
+    litellm_params:
+      model: ollama/*
+      api_base: http://ollama:11434
+    model_info:
+      mode: chat
