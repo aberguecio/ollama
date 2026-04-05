@@ -18,9 +18,48 @@ general_settings:
 
 # Solo Ollama - proxy dinámico para todos los modelos disponibles
 model_list:
-  - model_name: "*"
+
+  - model_name: "gemma4:e2b"
     litellm_params:
-      model: ollama/*
+      model: ollama/gemma4:e2b
       api_base: http://ollama:11434
+      extra_body:
+        think: false
+    model_info:
+      mode: chat
+
+  - model_name: "gemma4:26b"
+    litellm_params:
+      model: ollama/gemma4:26b
+      api_base: http://ollama:11434
+      extra_body:
+        think: false
+    model_info:
+      mode: chat
+
+  - model_name: "gemma4:26b-thinking"
+    litellm_params:
+      model: ollama/gemma4:26b
+      api_base: http://ollama:11434
+      extra_body:
+        think: true
+    model_info:
+      mode: chat
+
+  - model_name: "qwen3.5:35b"
+    litellm_params:
+      model: ollama/qwen3.5:35b-a3b
+      api_base: http://ollama:11434
+      extra_body:
+        think: false
+    model_info:
+      mode: chat
+
+  - model_name: "qwen3.5:35b-thinking"
+    litellm_params:
+      model: ollama/qwen3.5:35b-a3b
+      api_base: http://ollama:11434
+      extra_body:
+        think: true
     model_info:
       mode: chat
