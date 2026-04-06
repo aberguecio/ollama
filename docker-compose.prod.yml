@@ -88,10 +88,13 @@ services:
     environment:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-your-super-secret-api-key}
       - LITELLM_UI_PASSWORD=${LITELLM_UI_PASSWORD:-changeme123}
+      - DATABASE_URL=postgresql://litellm:${POSTGRES_PASSWORD:-changeme123}@postgres:5432/litellm
     volumes:
       - ./litellm/config.yaml:/app/config.yaml:ro
       - litellm_data:/app/data
     depends_on:
+      postgres:
+        condition: service_healthy
       ollama:
         condition: service_started
     healthcheck:
