@@ -72,3 +72,28 @@ model_list:
         think: true
     model_info:
       mode: chat
+
+  - model_name: "glm-4.7-flash"
+    litellm_params:
+      model: ollama/glm-4.7-flash:q4_K_M
+      api_base: http://ollama:11434
+      extra_body:
+        think: false
+    model_info:
+      mode: chat
+
+  - model_name: "glm-4.7-flash:thinking"
+    litellm_params:
+      model: ollama/glm-4.7-flash:q4_K_M
+      api_base: http://ollama:11434
+      extra_body:
+        think: true
+    model_info:
+      mode: chat
+
+  - model_name: "ministral-3:14b"
+    litellm_params:
+      model: ollama/ministral-3:14b
+      api_base: http://ollama:11434
+    model_info:
+      mode: chat
