@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-LiteLLM Benchmark — Primes Test
-Pide a cada modelo que encuentre todos los primos en 10 segundos
-e imprime el conteo. Valida contra la tabla de π(x).
+LiteLLM Benchmark — Nth Prime Test
+Pide a cada modelo que encuentre el primo número N e imprime solo ese número.
 """
 
 import json
@@ -32,6 +31,11 @@ def _load_api_key() -> str:
 
 API_KEY = _load_api_key()
 
+# ── Parámetros del test ───────────────────────────────────────────────────────
+
+TARGET_N        = 98_765       # Cuál primo buscar (el N-ésimo)
+EXPECTED_PRIME  = 1_282_213    # Valor correcto del primo N-ésimo
+
 # Orden: más grande primero
 MODELS = [
     ("qwen3.5:35b",      "qwen3.5:35b-a3b"),
@@ -43,35 +47,14 @@ MODELS = [
 ]
 
 QUESTION = (
-    "Write a Python script that finds as many prime numbers as possible in exactly 10 seconds.\n\n"
-    "Requirements:\n"
-    "- The script must run for exactly 10 seconds, then stop\n"
-    "- Output must be exactly two integers separated by a space: COUNT LIMIT\n"
-    "  where COUNT is the number of primes found and LIMIT is the largest number checked\n"
-    "- Example output: 78498 1000000\n"
-    "- Do NOT use any external libraries (no sympy, no gmpy2, etc.)\n"
-    "- Use only Python standard library (no imports needed beyond time)\n"
-    "- Use an efficient algorithm (Sieve of Eratosthenes recommended)\n"
-    "- The script must be self-contained and run with no arguments\n"
-    "- Do not print anything other than the two numbers\n\n"
+    f"Write a Python script that finds and prints the {TARGET_N}th prime number.\n"
+    "Print only the number, no labels, no explanation, no newlines before or after.\n"
+    "The script must run with no arguments.\n"
+    "Do not import anything — no imports at all.\n"
     "Output only the Python script, no explanations, no markdown, no code fences."
 )
 
 OLLAMA_CONTAINER = "ollama-prod"
-
-# Tabla de π(x): número de primos <= x
-# Fuente: https://primes.utm.edu/howmany.html
-PRIME_COUNT_TABLE = {
-    10: 4,
-    100: 25,
-    1_000: 168,
-    10_000: 1_229,
-    100_000: 9_592,
-    1_000_000: 78_498,
-    10_000_000: 664_579,
-    100_000_000: 5_761_455,
-    1_000_000_000: 50_847_534,
-}
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -103,56 +86,18 @@ def extract_code(text: str) -> str:
     return text.strip()
 
 
-def validate_primes(output: str) -> dict:
-    """Valida el output COUNT LIMIT contra la tabla de π(x)."""
-    output = output.strip()
-    parts = output.split()
-    if len(parts) != 2:
-        return {"valid": False, "error": f"output inesperado: '{output}'"}
-
-    try:
-        count = int(parts[0])
-        limit = int(parts[1])
-    except ValueError:
-        return {"valid": False, "error": f"no son enteros: '{output}'"}
-
-    # Buscar el valor esperado más cercano en la tabla
-    expected = None
-    for table_limit, table_count in sorted(PRIME_COUNT_TABLE.items()):
-        if limit == table_limit:
-            expected = table_count
-            break
-
-    result = {
-        "valid": True,
-        "count": count,
-        "limit": limit,
-        "expected": expected,
-    }
-
-    if expected is not None:
-        result["correct"] = count == expected
-        result["error_pct"] = round(abs(count - expected) / expected * 100, 4) if expected else None
-    else:
-        # Limit no está en la tabla — verificamos que esté en rango razonable
-        # usando interpolación simple
-        result["correct"] = None
-        result["note"] = f"límite {limit} no está en la tabla — conteo no verificable exactamente"
-
-    return result
-
-
 def run_and_validate(code: str) -> dict:
     import tempfile
     with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as f:
         f.write(code)
         tmp_path = f.name
 
-    print("\n  → Ejecutando script generado (15s timeout)...")
+    print(f"\n  → Ejecutando script generado (60s timeout)...")
+    run_start = time.time()
     try:
         result = subprocess.run(
             ["python3", tmp_path],
-            capture_output=True, text=True, timeout=20
+            capture_output=True, text=True, timeout=60
         )
         output = result.stdout.strip()
         stderr = result.stderr.strip()
@@ -161,13 +106,25 @@ def run_and_validate(code: str) -> dict:
     except Exception as e:
         return {"ran": False, "error": str(e)}
     finally:
+        run_elapsed = round(time.time() - run_start, 2)
         os.unlink(tmp_path)
 
     if not output:
         return {"ran": True, "error": f"sin output. stderr: {stderr[:300]}"}
 
-    validation = validate_primes(output)
-    return {"ran": True, **validation}
+    try:
+        value = int(output)
+    except ValueError:
+        return {"ran": True, "error": f"output no es un entero: '{output}'", "run_time_s": run_elapsed}
+
+    correct = value == EXPECTED_PRIME
+    return {
+        "ran": True,
+        "value": value,
+        "expected": EXPECTED_PRIME,
+        "correct": correct,
+        "run_time_s": run_elapsed,
+    }
 
 
 def call_model(litellm_name: str) -> dict:
@@ -261,10 +218,10 @@ def call_model(litellm_name: str) -> dict:
     print(f"\n\n{'─'*40}")
     print(f"  Tiempo total:        {metrics['total_time_s']}s")
     print(f"  Time to first token: {metrics['ttft_s']}s")
-    print(f"  Tokens/segundo:      {metrics['tokens_per_second']}")
-    print(f"  Completion tokens:   {metrics['completion_tokens']}")
+    print(f"  T/s:                 {metrics['tokens_per_second']}")
+    print(f"  Total tokens:        {metrics['total_tokens']}")
 
-    print(f"\n  → Validando código generado...")
+    print(f"\n  → Ejecutando y validando código generado...")
     code = extract_code(response_text)
     validation = run_and_validate(code)
     metrics["validation"] = validation
@@ -273,13 +230,9 @@ def call_model(litellm_name: str) -> dict:
         if "error" in validation:
             print(f"  ✗ Error: {validation['error']}")
         else:
-            print(f"  ✓ Primos encontrados: {validation['count']:,}")
-            print(f"  ✓ Limite chequeado:   {validation['limit']:,}")
-            if validation.get("expected") is not None:
-                status = "✓ CORRECTO" if validation["correct"] else f"✗ INCORRECTO (esperado {validation['expected']:,})"
-                print(f"  {status}")
-            elif validation.get("note"):
-                print(f"  ⚠ {validation['note']}")
+            status = "✓ CORRECTO" if validation["correct"] else f"✗ INCORRECTO (obtuvo {validation['value']:,}, esperado {validation['expected']:,})"
+            print(f"  {status}")
+            print(f"  Tiempo de ejecución: {validation['run_time_s']}s")
     else:
         print(f"  ✗ No se pudo ejecutar: {validation.get('error')}")
     print(f"{'─'*40}")
@@ -295,6 +248,7 @@ def main():
         sys.exit(1)
 
     print(f"\nPrimes Benchmark — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Buscando el primo número: {TARGET_N:,}  (esperado: {EXPECTED_PRIME:,})")
     print(f"API: {API_URL}")
     print(f"Modelos: {[m[0] for m in MODELS]}\n")
 
@@ -312,38 +266,38 @@ def main():
     print(f"\n\n{'═'*60}")
     print("  RESUMEN FINAL")
     print(f"{'═'*60}")
-    print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Primos':>10}  {'Correcto':>10}")
-    print(f"  {'─'*22} {'─'*6}  {'─'*6}  {'─'*10}  {'─'*10}")
+    print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Tot.tok':>8}  {'Ejecución':>10}  {'Valor':>10}  {'OK':>4}")
+    print(f"  {'─'*22} {'─'*6}  {'─'*6}  {'─'*8}  {'─'*10}  {'─'*10}  {'─'*4}")
     for r in results:
         if "error" in r:
             print(f"  {r['model']:<22}  ERROR: {r['error']}")
             continue
         v = r.get("validation", {})
         ttft_str = f"{r['ttft_s']}s" if r['ttft_s'] else "N/A"
-        if v.get("ran") and "count" in v:
-            primes_str = f"{v['count']:,}"
-            if v.get("correct") is True:
-                correct_str = "✓"
-            elif v.get("correct") is False:
-                correct_str = "✗"
-            else:
-                correct_str = "?"
+        if v.get("ran") and "value" in v:
+            val_str  = f"{v['value']:,}"
+            ok_str   = "✓" if v.get("correct") else "✗"
+            run_str  = f"{v['run_time_s']}s"
         else:
-            primes_str = "ERROR"
-            correct_str = "✗"
+            val_str  = "ERROR"
+            ok_str   = "✗"
+            run_str  = "N/A"
         print(
             f"  {r['model']:<22}"
             f"  {r['tokens_per_second']:>5.1f}"
             f"  {ttft_str:>6}"
-            f"  {primes_str:>10}"
-            f"  {correct_str:>10}"
+            f"  {r['total_tokens']:>8}"
+            f"  {run_str:>10}"
+            f"  {val_str:>10}"
+            f"  {ok_str:>4}"
         )
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"benchmark_{ts}.json")
     with open(out, "w", encoding="utf-8") as f:
         summary = [{k: v for k, v in r.items() if k != "response"} for r in results]
-        json.dump({"timestamp": ts, "question": QUESTION, "results": summary}, f, indent=2)
+        json.dump({"timestamp": ts, "target_n": TARGET_N, "expected_prime": EXPECTED_PRIME,
+                   "question": QUESTION, "results": summary}, f, indent=2)
     print(f"\n  Resultados guardados en: {out}\n")
 
 

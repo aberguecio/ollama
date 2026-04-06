@@ -41,48 +41,44 @@ MODELS = [
 ]
 
 QUESTION = (
-    "Write a Python script that computes as many correct digits of pi as possible within a time limit.\n\n"
-    "Requirements:\n"
-    "- The script must run for exactly 10 seconds, then stop and print the result\n"
-    "- Output must be ONLY the digits of pi, starting with 3, no spaces, no newlines, no labels\n"
-    "- Example of valid output: 314159265358979323846...\n"
-    "- Use arbitrary precision arithmetic (mpmath or decimal module)\n"
-    "- Use an efficient algorithm (Chudnovsky recommended)\n"
-    "- The script must be self-contained and run with no arguments\n"
-    "- Do not print anything other than the digits\n\n"
+    f"Write a Python script that computes and prints exactly {TARGET_DIGITS} digits of pi.\n"
+    "Output must be ONLY the digits, starting with 3, no spaces, no newlines, no labels.\n"
+    "Example of valid output: 314159265358979323846...\n"
+    "The script must be self-contained and run with no arguments.\n"
     "Output only the Python script, no explanations, no markdown, no code fences."
 )
 
 OLLAMA_CONTAINER = "ollama-prod"
+
+# ── Parámetros del test ───────────────────────────────────────────────────────
+
+TARGET_DIGITS = 1_000   # Cuántos dígitos de pi calcular
 
 PI_DIGITS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "pi.txt")).read().strip()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def extract_code(text: str) -> str:
-    """Extrae el código Python del response (remueve markdown si lo hay)."""
     import re
-    # Si hay bloque ```python ... ``` o ``` ... ```
     match = re.search(r"```(?:python)?\n(.*?)```", text, re.DOTALL)
     if match:
         return match.group(1).strip()
-    # Si no hay markdown, asume que todo es código
     return text.strip()
 
 
 def run_and_validate(code: str) -> dict:
-    """Ejecuta el script generado y valida los dígitos de pi contra pi.txt."""
     import tempfile
 
     with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as f:
         f.write(code)
         tmp_path = f.name
 
-    print("\n  → Ejecutando script generado (15s timeout)...")
+    print("\n  → Ejecutando script generado (60s timeout)...")
+    run_start = time.time()
     try:
         result = subprocess.run(
             ["python3", tmp_path],
-            capture_output=True, text=True, timeout=20
+            capture_output=True, text=True, timeout=60
         )
         output = result.stdout.strip()
         stderr = result.stderr.strip()
@@ -91,16 +87,15 @@ def run_and_validate(code: str) -> dict:
     except Exception as e:
         return {"ran": False, "error": str(e)}
     finally:
+        run_elapsed = round(time.time() - run_start, 2)
         os.unlink(tmp_path)
 
     if not output:
-        return {"ran": True, "error": f"sin output. stderr: {stderr[:200]}"}
+        return {"ran": True, "error": f"sin output. stderr: {stderr[:200]}", "run_time_s": run_elapsed}
 
-    # Validar que el output son solo dígitos
     if not output.isdigit():
-        return {"ran": True, "error": f"output no son solo dígitos: {output[:80]}"}
+        return {"ran": True, "error": f"output no son solo dígitos: {output[:80]}", "run_time_s": run_elapsed}
 
-    # Contar dígitos correctos comparando contra pi.txt
     correct = 0
     for a, b in zip(output, PI_DIGITS):
         if a == b:
@@ -114,6 +109,7 @@ def run_and_validate(code: str) -> dict:
         "correct_digits": correct,
         "correct_pct": round(correct / len(PI_DIGITS) * 100, 4),
         "first_error_pos": correct if correct < len(output) else None,
+        "run_time_s": run_elapsed,
     }
 
 
@@ -255,6 +251,7 @@ def test_model(litellm_name: str) -> dict:
         else:
             print(f"  ✓ Dígitos generados:  {validation['digits_output']}")
             print(f"  ✓ Dígitos correctos:  {validation['correct_digits']} ({validation['correct_pct']}%)")
+            print(f"  ✓ Tiempo ejecución:   {validation['run_time_s']}s")
             if validation["first_error_pos"] is not None:
                 print(f"  ✗ Primer error en posición: {validation['first_error_pos']}")
     else:
@@ -272,7 +269,8 @@ def main():
         print("  export LITELLM_MASTER_KEY=<tu-key>")
         sys.exit(1)
 
-    print(f"\nLiteLLM Benchmark — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"\nPi Benchmark — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Dígitos objetivo: {TARGET_DIGITS:,}")
     print(f"API: {API_URL}")
     print(f"Modelos: {[m[0] for m in MODELS]}\n")
 
@@ -290,28 +288,31 @@ def main():
     print(f"\n\n{'═'*60}")
     print("  RESUMEN FINAL")
     print(f"{'═'*60}")
-    print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Total':>7}  {'Tokens':>7}  {'Pi correcto':>12}")
-    print(f"  {'─'*22} {'─'*6}  {'─'*6}  {'─'*7}  {'─'*7}  {'─'*12}")
+    print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Tot.tok':>8}  {'Ejecución':>10}  {'Dígitos ok':>10}  {'%':>6}")
+    print(f"  {'─'*22} {'─'*6}  {'─'*6}  {'─'*8}  {'─'*10}  {'─'*10}  {'─'*6}")
     for r in results:
         if "error" in r:
             print(f"  {r['model']:<22}  ERROR: {r['error']}")
+            continue
+        ttft_str = f"{r['ttft_s']}s" if r['ttft_s'] else "N/A"
+        v = r.get("validation", {})
+        if v.get("ran") and "correct_digits" in v:
+            digits_str = str(v['correct_digits'])
+            pct_str    = f"{v['correct_pct']}%"
+            run_str    = f"{v['run_time_s']}s"
         else:
-            ttft_str = f"{r['ttft_s']}s" if r['ttft_s'] else "  N/A"
-            v = r.get("validation", {})
-            if v.get("ran") and "correct_digits" in v:
-                pi_str = f"{v['correct_digits']} ({v['correct_pct']}%)"
-            elif v.get("error"):
-                pi_str = v["error"][:12]
-            else:
-                pi_str = "N/A"
-            print(
-                f"  {r['model']:<22}"
-                f"  {r['tokens_per_second']:>5.1f}"
-                f"  {ttft_str:>6}"
-                f"  {r['total_time_s']:>6.1f}s"
-                f"  {r['completion_tokens']:>7}"
-                f"  {pi_str:>12}"
-            )
+            digits_str = "ERROR"
+            pct_str    = "─"
+            run_str    = "N/A"
+        print(
+            f"  {r['model']:<22}"
+            f"  {r['tokens_per_second']:>5.1f}"
+            f"  {ttft_str:>6}"
+            f"  {r['total_tokens']:>8}"
+            f"  {run_str:>10}"
+            f"  {digits_str:>10}"
+            f"  {pct_str:>6}"
+        )
 
     # ── Guardar resultados ────────────────────────────────────────────────────
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
