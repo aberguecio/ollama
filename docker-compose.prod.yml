@@ -7,11 +7,11 @@ services:
       - ollama_data:/root/.ollama
       - ./models:/models
     environment:
-      - OLLAMA_HOST=${OLLAMA_HOST:-0.0.0.0}
-      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-20m}
-      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
-      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-2}
-      - OLLAMA_MAX_QUEUE=${OLLAMA_MAX_QUEUE:-512}
+      - OLLAMA_HOST=${OLLAMA_HOST}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS}
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL}
+      - OLLAMA_MAX_QUEUE=${OLLAMA_MAX_QUEUE}
       - OLLAMA_VULKAN=0
       - MALLOC_ARENA_MAX=1
     healthcheck:
@@ -25,9 +25,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${MEMORY_LIMIT:-12G}
+          memory: ${MEMORY_LIMIT}
         reservations:
-          memory: ${MEMORY_RESERVATION:-4G}
+          memory: ${MEMORY_RESERVATION}
 
   ollama-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -38,8 +38,8 @@ services:
     environment:
       - OLLAMA_BASE_URL=""
       - OPENAI_API_BASE_URL=http://litellm:4000/v1
-      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-your-super-secret-api-key}
-      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-your-secret-key-change-this}
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
     volumes:
       - ollama_webui_data:/app/backend/data
     depends_on:
@@ -69,7 +69,7 @@ services:
     environment:
       - POSTGRES_DB=litellm
       - POSTGRES_USER=litellm
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme123}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -86,9 +86,9 @@ services:
     networks:
       - proxy
     environment:
-      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-your-super-secret-api-key}
-      - UI_PASSWORD=${LITELLM_UI_PASSWORD:-changeme123}
-      - DATABASE_URL=postgresql://litellm:${POSTGRES_PASSWORD:-changeme123}@postgres:5432/litellm
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - UI_PASSWORD=${LITELLM_UI_PASSWORD}
+      - DATABASE_URL=postgresql://litellm:${POSTGRES_PASSWORD}@postgres:5432/litellm
     volumes:
       - ./litellm/config.yaml:/app/config.yaml:ro
       - litellm_data:/app/data
