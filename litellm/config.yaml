@@ -14,7 +14,7 @@ general_settings:
 
   # UI de admin (opcional)
   ui_username: admin
-  ui_password: os.environ/LITELLM_UI_PASSWORD
+  ui_password: os.environ/UI_PASSWORD
 
 # Solo Ollama - proxy dinámico para todos los modelos disponibles
 model_list:
@@ -22,6 +22,15 @@ model_list:
   - model_name: "gemma4:e2b"
     litellm_params:
       model: ollama/gemma4:e2b
+      api_base: http://ollama:11434
+      extra_body:
+        think: false
+    model_info:
+      mode: chat
+
+  - model_name: "gemma4:e4b"
+    litellm_params:
+      model: ollama/gemma4:e4b
       api_base: http://ollama:11434
       extra_body:
         think: false
