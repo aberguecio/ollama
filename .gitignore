@@ -33,5 +33,5 @@ Thumbs.db
 
 # Benchmarks y tests
 benchmark_*.txt
-tests/results/
+tests/results
 __pycache__/
