@@ -33,8 +33,5 @@ Thumbs.db
 
 # Benchmarks y tests
 benchmark_*.txt
-test_output/
-tests/primes/benchmark_*.json
-tests/primes/__pycache__/
-tests/pi/benchmark_*.json
-tests/pi/__pycache__/
+tests/results/
+__pycache__/
