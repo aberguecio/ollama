@@ -1,0 +1,108 @@
+{
+  "benchmark": "Pi",
+  "timestamp": "20260406_193520",
+  "question": "Write a Python script that computes and prints exactly 1000 digits of pi.\nOutput must be ONLY the digits, starting with 3, no spaces, no newlines, no labels.\nExample of valid output: 314159265358979323846...\nThe script must be self-contained and run with no arguments.\nOutput only the Python script, no explanations, no markdown, no code fences.",
+  "results": [
+    {
+      "model": "gemma4:31b",
+      "total_time_s": 806.69,
+      "ttft_s": 50.97,
+      "generation_time_s": 755.71,
+      "tokens_per_second": 1.2,
+      "prompt_tokens": 114,
+      "completion_tokens": 901,
+      "total_tokens": 1015,
+      "validation": {
+        "ran": true,
+        "error": "output no son solo d\u00edgitos: 31415926535897932384626433832795028841971693993751058209749445923078164062862089",
+        "correct": false,
+        "run_time_s": 0.05
+      }
+    },
+    {
+      "model": "qwen3.5:35b",
+      "total_time_s": 785.9,
+      "ttft_s": 21.89,
+      "generation_time_s": 764.01,
+      "tokens_per_second": 3.9,
+      "prompt_tokens": 116,
+      "completion_tokens": 3000,
+      "total_tokens": 3116,
+      "validation": {
+        "ran": false,
+        "error": "script failed with code 1. stderr: File \"/tmp/tmp3stw4off.py\", line 1\n    print(\"31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456",
+        "run_time_s": 0.14
+      }
+    },
+    {
+      "model": "glm-4.7-flash",
+      "total_time_s": 61.73,
+      "ttft_s": 16.7,
+      "generation_time_s": 45.04,
+      "tokens_per_second": 6.7,
+      "prompt_tokens": 94,
+      "completion_tokens": 303,
+      "total_tokens": 397,
+      "validation": {
+        "ran": false,
+        "error": "script failed with code 1. stderr: Traceback (most recent call last):\n  File \"/tmp/tmpjseqml8l.py\", line 40, in <module>\n    print(compute_pi(1000))\n  File \"/tmp/tmpjseqml8l.py\", line 26, in compute_pi\n    S += M / X\nZeroDivisionError: division by zero",
+        "run_time_s": 0.1
+      }
+    },
+    {
+      "model": "ministral-3:14b",
+      "total_time_s": 97.3,
+      "ttft_s": 81.61,
+      "generation_time_s": 15.69,
+      "tokens_per_second": 2.8,
+      "prompt_tokens": 655,
+      "completion_tokens": 44,
+      "total_tokens": 699,
+      "validation": {
+        "ran": true,
+        "correct": false,
+        "digits_generated": 16,
+        "correct_digits": 16,
+        "accuracy_pct": 1.5429,
+        "first_error_pos": null,
+        "target_digits": 1000,
+        "run_time_s": 0.02
+      }
+    },
+    {
+      "model": "gemma4:26b",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "model": "gemma4:e4b",
+      "total_time_s": 33.23,
+      "ttft_s": 13.82,
+      "generation_time_s": 19.41,
+      "tokens_per_second": 6.4,
+      "prompt_tokens": 114,
+      "completion_tokens": 125,
+      "total_tokens": 239,
+      "validation": {
+        "ran": false,
+        "error": "script failed with code 1. stderr: Traceback (most recent call last):\n  File \"/tmp/tmpenxvsdbu.py\", line 2, in <module>\n    from sympy import pi\nModuleNotFoundError: No module named 'sympy'",
+        "run_time_s": 0.09
+      }
+    },
+    {
+      "model": "gemma4:e2b",
+      "total_time_s": 14.03,
+      "ttft_s": 10.0,
+      "generation_time_s": 4.04,
+      "tokens_per_second": 12.6,
+      "prompt_tokens": 114,
+      "completion_tokens": 51,
+      "total_tokens": 165,
+      "validation": {
+        "ran": true,
+        "error": "output no son solo d\u00edgitos: 3.141592653589793",
+        "correct": false,
+        "run_time_s": 0.02
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "benchmark": "Pi",
+  "timestamp": "20260406_190926",
+  "question": "Write a Python script that computes and prints exactly 1000 digits of pi.\nOutput must be ONLY the digits, starting with 3, no spaces, no newlines, no labels.\nExample of valid output: 314159265358979323846...\nThe script must be self-contained and run with no arguments.\nOutput only the Python script, no explanations, no markdown, no code fences.",
+  "results": [
+    {
+      "model": "gemma4:31b",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "model": "qwen3.5:35b",
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "model": "glm-4.7-flash",
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "model": "ministral-3:14b",
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "model": "gemma4:26b",
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "model": "gemma4:e4b",
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "model": "gemma4:e2b",
+      "error": "HTTP Error 502: Bad Gateway"
+    }
+  ]
+}

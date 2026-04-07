@@ -1,0 +1,26 @@
+{
+  "benchmark": "FibCollatz",
+  "timestamp": "20260406_223847",
+  "question": "Write a Python script that finds the largest Fibonacci number strictly less than the length of the longest Collatz sequence for any number under 1,000,000.\n\nThe Collatz sequence for n: if n is even divide by 2, if odd multiply by 3 and add 1, repeat until reaching 1. Count every step including the starting number and 1.\nA Fibonacci sequence starts 1, 1, 2, 3, 5, 8, 13, ...\nPrint only that Fibonacci number, no labels, no explanation, no newlines before or after.\nThe script must run with no arguments.\nDo not import anything \u2014 no imports at all.\nOutput only the Python script, no explanations, no markdown, no code fences.",
+  "results": [
+    {
+      "model": "gemma4:e2b",
+      "total_time_s": 32.12,
+      "ttft_s": 3.8,
+      "generation_time_s": 28.32,
+      "tokens_per_second": 10.5,
+      "prompt_tokens": 181,
+      "completion_tokens": 296,
+      "total_tokens": 477,
+      "validation": {
+        "ran": true,
+        "correct": true,
+        "value": 377,
+        "expected": 377,
+        "limit": 1000000,
+        "difference": 0,
+        "run_time_s": 16.22
+      }
+    }
+  ]
+}

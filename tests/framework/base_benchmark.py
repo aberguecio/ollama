@@ -241,6 +241,9 @@ class BaseBenchmark(ABC):
         print(f"  Prompt tokens:       {metrics['prompt_tokens']}")
         print(f"  Completion tokens:   {metrics['completion_tokens']}")
         print(f"  Total tokens:        {metrics['total_tokens']}")
+        preview = response_text[:100].replace('\n', '↵').replace('\r', '')
+        ellipsis = '…' if len(response_text) > 100 else ''
+        print(f"  Respuesta (100c):    {preview}{ellipsis}")
 
         # Validar correctitud del código generado
         print("\\n  → Validando código generado...")

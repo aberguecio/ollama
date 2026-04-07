@@ -1,0 +1,26 @@
+{
+  "benchmark": "NQueens",
+  "timestamp": "20260406_223847",
+  "question": "Write a Python script that counts all distinct solutions to the N-Queens problem for N=13.\nPrint only the number of solutions, no labels, no explanation, no newlines before or after.\nThe script must run with no arguments.\nDo not import anything \u2014 no imports at all.\nOutput only the Python script, no explanations, no markdown, no code fences.",
+  "results": [
+    {
+      "model": "gemma4:e2b",
+      "total_time_s": 29.53,
+      "ttft_s": 7.16,
+      "generation_time_s": 22.37,
+      "tokens_per_second": 10.3,
+      "prompt_tokens": 92,
+      "completion_tokens": 231,
+      "total_tokens": 323,
+      "validation": {
+        "ran": true,
+        "correct": false,
+        "value": 0,
+        "expected": 73712,
+        "n": 13,
+        "difference": -73712,
+        "run_time_s": 0.02
+      }
+    }
+  ]
+}

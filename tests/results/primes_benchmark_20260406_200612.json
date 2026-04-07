@@ -1,0 +1,77 @@
+{
+  "benchmark": "Primes",
+  "timestamp": "20260406_200612",
+  "question": "Write a Python script that finds and prints the 98765th prime number.\nPrint only the number, no labels, no explanation, no newlines before or after.\nThe script must run with no arguments.\nDo not import anything \u2014 no imports at all.\nOutput only the Python script, no explanations, no markdown, no code fences.",
+  "results": [
+    {
+      "model": "gemma4:31b",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "model": "qwen3.5:35b",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "model": "glm-4.7-flash",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "model": "ministral-3:14b",
+      "total_time_s": 102.1,
+      "ttft_s": 77.16,
+      "generation_time_s": 24.95,
+      "tokens_per_second": 2.8,
+      "prompt_tokens": 629,
+      "completion_tokens": 71,
+      "total_tokens": 700,
+      "validation": {
+        "ran": true,
+        "error": "sin output del script",
+        "correct": false,
+        "run_time_s": 18.29
+      }
+    },
+    {
+      "model": "gemma4:26b",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "model": "gemma4:e4b",
+      "total_time_s": 29.56,
+      "ttft_s": 12.97,
+      "generation_time_s": 16.6,
+      "tokens_per_second": 6.4,
+      "prompt_tokens": 88,
+      "completion_tokens": 106,
+      "total_tokens": 194,
+      "validation": {
+        "ran": true,
+        "correct": true,
+        "value": 1282213,
+        "expected": 1282213,
+        "target_n": 98765,
+        "difference": 0,
+        "run_time_s": 11.67
+      }
+    },
+    {
+      "model": "gemma4:e2b",
+      "total_time_s": 19.36,
+      "ttft_s": 10.21,
+      "generation_time_s": 9.15,
+      "tokens_per_second": 11.6,
+      "prompt_tokens": 88,
+      "completion_tokens": 106,
+      "total_tokens": 194,
+      "validation": {
+        "ran": true,
+        "correct": true,
+        "value": 1282213,
+        "expected": 1282213,
+        "target_n": 98765,
+        "difference": 0,
+        "run_time_s": 6.51
+      }
+    }
+  ]
+}

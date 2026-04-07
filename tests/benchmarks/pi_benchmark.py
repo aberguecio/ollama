@@ -75,6 +75,9 @@ class PiBenchmark(BaseBenchmark):
                 "correct": False
             }
 
+        # Limpiar output: quitar espacios y newlines (el modelo puede hacer varios print)
+        output = output.replace('\n', '').replace('\r', '').replace(' ', '')
+
         # Verificar que el output sean solo dígitos
         if not output.isdigit():
             return {

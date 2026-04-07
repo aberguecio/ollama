@@ -1,5 +1,10 @@
 """
-Benchmark específico para encontrar el único primo que es suma de dígitos de n³.
+Benchmark: mayor número de Fibonacci estrictamente menor que la longitud
+de la secuencia de Collatz más larga para cualquier n < 1.000.000.
+
+Respuesta esperada: 377
+  - La secuencia Collatz más larga para n < 1.000.000 es la de n=837.799, longitud=525
+  - El mayor Fibonacci estrictamente menor que 525 es 377 (377 < 525 < 610)
 """
 
 import os
@@ -11,44 +16,35 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from framework.base_benchmark import BaseBenchmark
 
 
-class PalindromesBenchmark(BaseBenchmark):
+class FibCollatzBenchmark(BaseBenchmark):
     """
-    Benchmark que busca el único primo que es la suma de dígitos de n³,
-    donde n (1 ≤ n ≤ 1,000,000) no es palíndromo pero n² sí es palíndromo.
+    Benchmark que pide a modelos generar código para encontrar el mayor Fibonacci
+    estrictamente menor que la longitud de la secuencia de Collatz más larga
+    para cualquier número bajo 1.000.000.
     """
 
-    def __init__(self, max_n: int = 1_000_000, expected_prime: int = 37):
-        super().__init__("Palindromes")
-        self.max_n = max_n
-        self.expected_prime = expected_prime
+    def __init__(self, limit: int = 1_000_000, expected: int = 377):
+        super().__init__("FibCollatz")
+        self.limit = limit
+        self.expected = expected
 
     def get_question(self) -> str:
-        """Retorna la pregunta específica para el benchmark de palíndromos."""
         return (
-            f"Write a Python script that finds the only prime number that is also the digit sum of n³, "
-            f"for some integer n where 1 ≤ n ≤ {self.max_n:,}, n is not a palindrome, but n² is a palindrome.\n\n"
-            "A palindrome reads the same forwards and backwards (e.g., 121, 1331).\n"
-            "Print only that prime number, no labels, no explanation, no newlines before or after.\n"
+            f"Write a Python script that finds the largest Fibonacci number strictly less than "
+            f"the length of the longest Collatz sequence for any number under {self.limit:,}.\n\n"
+            "The Collatz sequence for n: if n is even divide by 2, if odd multiply by 3 and add 1, "
+            "repeat until reaching 1. Count every step including the starting number and 1.\n"
+            "A Fibonacci sequence starts 1, 1, 2, 3, 5, 8, 13, ...\n"
+            "Print only that Fibonacci number, no labels, no explanation, no newlines before or after.\n"
             "The script must run with no arguments.\n"
             "Do not import anything — no imports at all.\n"
             "Output only the Python script, no explanations, no markdown, no code fences."
         )
 
     def validate_result(self, code: str, output: str) -> Dict[str, Any]:
-        """
-        Valida que el primo encontrado sea correcto.
-
-        Returns:
-            Dict con información de validación específica para Palíndromos
-        """
         if not output:
-            return {
-                "ran": True,
-                "error": "sin output del script",
-                "correct": False
-            }
+            return {"ran": True, "error": "sin output del script", "correct": False}
 
-        # Intentar convertir el output a entero (tomar la última línea con dígitos)
         candidates = [l.strip() for l in output.strip().splitlines() if l.strip().isdigit()]
         try:
             result_value = int(candidates[-1]) if candidates else int(output.strip())
@@ -56,23 +52,21 @@ class PalindromesBenchmark(BaseBenchmark):
             return {
                 "ran": True,
                 "error": f"output no es un entero: '{output[:100]}'",
-                "correct": False
+                "correct": False,
             }
 
-        # Verificar si el resultado es correcto
-        correct = result_value == self.expected_prime
+        correct = result_value == self.expected
 
         return {
             "ran": True,
             "correct": correct,
             "value": result_value,
-            "expected": self.expected_prime,
-            "max_n": self.max_n,
-            "difference": result_value - self.expected_prime if not correct else 0
+            "expected": self.expected,
+            "limit": self.limit,
+            "difference": result_value - self.expected if not correct else 0,
         }
 
     def _print_validation_result(self, validation: Dict[str, Any]):
-        """Imprime los resultados de validación específicos para Palíndromos."""
         if not validation.get("ran"):
             print(f"  ✗ No se pudo ejecutar: {validation.get('error')}")
             return
@@ -82,26 +76,27 @@ class PalindromesBenchmark(BaseBenchmark):
             return
 
         if validation.get("correct"):
-            print(f"  ✓ CORRECTO: {validation['value']} (único primo que es suma de dígitos de n³)")
+            print(
+                f"  ✓ CORRECTO: {validation['value']} "
+                f"(mayor Fibonacci < longitud Collatz máxima bajo {validation['limit']:,})"
+            )
         else:
-            expected = validation['expected']
-            actual = validation['value']
-            diff = validation.get('difference', 0)
+            expected = validation["expected"]
+            actual = validation["value"]
+            diff = validation.get("difference", 0)
             print(f"  ✗ INCORRECTO: obtuvo {actual}, esperado {expected} (diferencia: {diff:+})")
 
         if "run_time_s" in validation:
             print(f"  ✓ Tiempo ejecución:   {validation['run_time_s']}s")
 
     def _print_summary(self, results: list):
-        """Imprime el resumen específico para el benchmark de Palíndromos."""
         print(f"\n\n{'═'*60}")
-        print("  RESUMEN FINAL - PALINDROMES BENCHMARK")
+        print("  RESUMEN FINAL - FIB-COLLATZ BENCHMARK")
         print(f"{'═'*60}")
-        print(f"  Objetivo: Único primo que es suma de dígitos de n³")
-        print(f"  Donde n no es palíndromo pero n² sí (n ≤ {self.max_n:,})")
-        print(f"  Primo esperado: {self.expected_prime}")
+        print(f"  Objetivo: Mayor Fibonacci < longitud Collatz máx (n<{self.limit:,})")
+        print(f"  Esperado: {self.expected}")
         print(f"{'═'*60}")
-        print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Tot.tok':>8}  {'Ejecución':>10}  {'Primo':>6}  {'OK':>4}")
+        print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Tot.tok':>8}  {'Ejecución':>10}  {'Valor':>6}  {'OK':>4}")
         print(f"  {'─'*22} {'─'*6}  {'─'*6}  {'─'*8}  {'─'*10}  {'─'*6}  {'─'*4}")
 
         for r in results:
@@ -109,7 +104,7 @@ class PalindromesBenchmark(BaseBenchmark):
                 print(f"  {r['model']:<22}  ERROR: {r['error']}")
                 continue
 
-            ttft_str = f"{r['ttft_s']}s" if r['ttft_s'] else "N/A"
+            ttft_str = f"{r['ttft_s']}s" if r["ttft_s"] else "N/A"
             v = r.get("validation", {})
 
             if v.get("ran") and not v.get("error"):

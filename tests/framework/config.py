@@ -28,7 +28,7 @@ def load_api_key() -> str:
 # Modelos en orden: más grande primero
 # Formato: (nombre_litellm, nombre_ollama)
 MODELS = [
-    ("gemma4:31b", "gemma4:31b"),
+    ("gemma4:31b", "gemma4:31b-it-q4_K_M"),
     ("qwen3.5:35b", "qwen3.5:35b-a3b"),
     ("glm-4.7-flash", "glm-4.7-flash:q4_K_M"),
     ("ministral-3:14b", "ministral-3:14b"),

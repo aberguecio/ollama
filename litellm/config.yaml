@@ -55,6 +55,24 @@ model_list:
     model_info:
       mode: chat
 
+  - model_name: "gemma4:31b"
+    litellm_params:
+      model: ollama/gemma4:31b-it-q4_K_M
+      api_base: http://ollama:11434
+      extra_body:
+        think: false
+    model_info:
+      mode: chat
+
+  - model_name: "gemma4:31b-thinking"
+    litellm_params:
+      model: ollama/gemma4:31b-it-q4_K_M
+      api_base: http://ollama:11434
+      extra_body:
+        think: true
+    model_info:
+      mode: chat
+
   - model_name: "qwen3.5:35b"
     litellm_params:
       model: ollama/qwen3.5:35b-a3b
