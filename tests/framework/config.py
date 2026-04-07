@@ -29,10 +29,14 @@ def load_api_key() -> str:
 # Formato: (nombre_litellm, nombre_ollama)
 MODELS = [
     ("gemma4:31b", "gemma4:31b-it-q4_K_M"),
+    ("gemma4:31b-thinking", "gemma4:31b-it-q4_K_M"),
     ("qwen3.5:35b", "qwen3.5:35b-a3b"),
+    ("qwen3.5:35b-thinking", "qwen3.5:35b-a3b"),
     ("glm-4.7-flash", "glm-4.7-flash:q4_K_M"),
+    ("glm-4.7-flash:thinking", "glm-4.7-flash:q4_K_M"),
     ("ministral-3:14b", "ministral-3:14b"),
     ("gemma4:26b", "gemma4:26b"),
+    ("gemma4:26b-thinking", "gemma4:26b"),
     ("gemma4:e4b", "gemma4:e4b"),
     ("gemma4:e2b", "gemma4:e2b"),
 ]

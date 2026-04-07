@@ -59,6 +59,16 @@ cd tests/
 python run_all.py
 ```
 
+### Ejecutar en segundo plano (resiste desconexión SSH)
+```bash
+nohup python3 -u /home/langosta/ollama/tests/run_all.py > /tmp/bench.log 2>&1 &
+```
+
+Ver progreso en tiempo real:
+```bash
+tail -f /tmp/bench.log
+```
+
 ### Ejecutar benchmarks específicos
 ```bash
 # Solo el benchmark de Pi

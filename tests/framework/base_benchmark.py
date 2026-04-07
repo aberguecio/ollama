@@ -61,6 +61,15 @@ class BaseBenchmark(ABC):
             return match.group(1).strip()
         return text.strip()
 
+    def check_no_imports(self, code: str) -> list:
+        """Retorna lista de líneas con imports encontrados en el código."""
+        violations = []
+        for line in code.splitlines():
+            stripped = line.strip()
+            if re.match(r'^import\s+', stripped) or re.match(r'^from\s+\S+\s+import\s+', stripped):
+                violations.append(stripped)
+        return violations
+
     def run_code(self, code: str) -> Dict[str, Any]:
         """
         Ejecuta el código Python y retorna el resultado.
@@ -241,19 +250,36 @@ class BaseBenchmark(ABC):
         print(f"  Prompt tokens:       {metrics['prompt_tokens']}")
         print(f"  Completion tokens:   {metrics['completion_tokens']}")
         print(f"  Total tokens:        {metrics['total_tokens']}")
-        preview = response_text[:100].replace('\n', '↵').replace('\r', '')
-        ellipsis = '…' if len(response_text) > 100 else ''
-        print(f"  Respuesta (100c):    {preview}{ellipsis}")
 
         # Validar correctitud del código generado
         print("\\n  → Validando código generado...")
         code = self.extract_code(response_text)
+
+        import_violations = self.check_no_imports(code)
+        if import_violations:
+            print(f"  ✗ IMPORTS DETECTADOS ({len(import_violations)}):")
+            for v in import_violations:
+                print(f"      {v}")
+            metrics["validation"] = {
+                "ran": False,
+                "correct": False,
+                "error": f"imports no permitidos: {import_violations}",
+            }
+            self._print_validation_result(metrics["validation"])
+            print(f"{'─'*40}")
+            return metrics
+
         execution_result = self.run_code(code)
 
         if execution_result["ran"]:
-            validation = self.validate_result(code, execution_result["output"])
+            script_output = execution_result["output"]
+            preview = script_output[:100].replace('\n', '↵').replace('\r', '')
+            ellipsis = '…' if len(script_output) > 100 else ''
+            print(f"  Script output (100c): {preview}{ellipsis}")
+            validation = self.validate_result(code, script_output)
             validation["run_time_s"] = execution_result["run_time_s"]
         else:
+            print(f"  Script output (100c): (no corrió — {execution_result.get('error', '')[:80]})")
             validation = execution_result
 
         metrics["validation"] = validation

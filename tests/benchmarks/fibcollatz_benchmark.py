@@ -1,10 +1,8 @@
 """
-Benchmark: mayor número de Fibonacci estrictamente menor que la longitud
-de la secuencia de Collatz más larga para cualquier n < 1.000.000.
+Benchmark: número de dígitos de F(K), donde K es el número de Fibonacci bajo 1.000.000
+con la secuencia de Collatz más larga, y F(K) es el K-ésimo número de Fibonacci.
 
-Respuesta esperada: 377
-  - La secuencia Collatz más larga para n < 1.000.000 es la de n=837.799, longitud=525
-  - El mayor Fibonacci estrictamente menor que 525 es 377 (377 < 525 < 610)
+Respuesta esperada: 66419
 """
 
 import os
@@ -18,24 +16,23 @@ from framework.base_benchmark import BaseBenchmark
 
 class FibCollatzBenchmark(BaseBenchmark):
     """
-    Benchmark que pide a modelos generar código para encontrar el mayor Fibonacci
-    estrictamente menor que la longitud de la secuencia de Collatz más larga
-    para cualquier número bajo 1.000.000.
+    Benchmark: encuentra el Fibonacci bajo 1.000.000 con la secuencia de Collatz más larga (K),
+    luego imprime el número de dígitos del K-ésimo Fibonacci F(K).
     """
 
-    def __init__(self, limit: int = 1_000_000, expected: int = 377):
+    def __init__(self, limit: int = 1_000_000, expected: int = 66419):
         super().__init__("FibCollatz")
         self.limit = limit
         self.expected = expected
 
     def get_question(self) -> str:
         return (
-            f"Write a Python script that finds the largest Fibonacci number strictly less than "
-            f"the length of the longest Collatz sequence for any number under {self.limit:,}.\n\n"
-            "The Collatz sequence for n: if n is even divide by 2, if odd multiply by 3 and add 1, "
-            "repeat until reaching 1. Count every step including the starting number and 1.\n"
-            "A Fibonacci sequence starts 1, 1, 2, 3, 5, 8, 13, ...\n"
-            "Print only that Fibonacci number, no labels, no explanation, no newlines before or after.\n"
+            f"Write a Python script that finds the Fibonacci number under {self.limit:,} "
+            "whose Collatz sequence is the longest. "
+            "Count every step including the starting number and 1. "
+            "Call that number K. "
+            "Then compute F(K), the K-th Fibonacci number where F(1)=1, F(2)=1, F(3)=2. "
+            "Print only the number of digits of F(K), no labels, no explanation, no newlines before or after.\n"
             "The script must run with no arguments.\n"
             "Do not import anything — no imports at all.\n"
             "Output only the Python script, no explanations, no markdown, no code fences."
@@ -76,10 +73,7 @@ class FibCollatzBenchmark(BaseBenchmark):
             return
 
         if validation.get("correct"):
-            print(
-                f"  ✓ CORRECTO: {validation['value']} "
-                f"(mayor Fibonacci < longitud Collatz máxima bajo {validation['limit']:,})"
-            )
+            print(f"  ✓ CORRECTO: {validation['value']} dígitos en F(K)")
         else:
             expected = validation["expected"]
             actual = validation["value"]
@@ -93,7 +87,7 @@ class FibCollatzBenchmark(BaseBenchmark):
         print(f"\n\n{'═'*60}")
         print("  RESUMEN FINAL - FIB-COLLATZ BENCHMARK")
         print(f"{'═'*60}")
-        print(f"  Objetivo: Mayor Fibonacci < longitud Collatz máx (n<{self.limit:,})")
+        print(f"  Objetivo: Dígitos de F(K), K=Fibonacci<{self.limit:,} con Collatz más largo")
         print(f"  Esperado: {self.expected}")
         print(f"{'═'*60}")
         print(f"  {'Modelo':<22} {'T/s':>6}  {'TTFT':>6}  {'Tot.tok':>8}  {'Ejecución':>10}  {'Valor':>6}  {'OK':>4}")
